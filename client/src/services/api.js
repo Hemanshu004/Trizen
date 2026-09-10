@@ -9,6 +9,12 @@ const api = axios.create({
 
 // Attach JWT token to every request if available
 api.interceptors.request.use((config) => {
+  // Fix Axios WHATWG URL resolution dropping the /api path in production
+  if (config.baseURL && config.url && config.url.startsWith('/')) {
+    config.url = config.baseURL.replace(/\/$/, '') + config.url;
+    config.baseURL = ''; // Clear baseURL so Axios does not attempt to resolve it again
+  }
+
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
